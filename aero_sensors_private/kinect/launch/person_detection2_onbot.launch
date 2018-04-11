@@ -1,0 +1,48 @@
+<launch>
+  <arg name="ns" default="kinect"/>
+  <arg name="tf_msg" default="/tf_msg/dynamic_kinect_frame"/>
+  <arg name="tf_base" default="/tf_msg/base_frame"/>
+  <arg name="queue_size" default="30"/>
+  <arg name="timestamp" default="0.12"/>
+  <arg name="use_static_axis" default="false"/>
+  <arg name="track_head" default="false"/>
+  <arg name="output" default="screen"/>
+
+  <!-- sensor filter settings -->
+  <arg name="xf" default="1.0"/>
+  <arg name="yf" default="0.0"/>
+  <arg name="thetaf" default="0.707"/>
+
+  <node name="look_at_kinect" pkg="aero_sensors_private"
+	type="look_at_kinect2" output="$(arg output)">
+      <param name="xf" value="$(arg xf)"/>
+      <param name="yf" value="$(arg yf)"/>
+      <param name="track_head" value="$(arg track_head)"/>
+  </node>
+
+  <include file="$(find aero_sensors_private)/utils/launch/person_detection2_onbot.launch">
+    <arg name="ns" value="$(arg ns)"/>
+  </include>
+
+  <!-- below sensor filters -->
+  <!-- filters are disabled by default in person_detection2.launch -->
+
+  <node name="sensordirection_filter" pkg="aero_sensors_private" type="sensordirection_filter" output="$(arg output)"
+        respawn="true">
+      <param name="ns" value="$(arg ns)"/>
+      <param name="theta" value="$(arg thetaf)"/>
+      <param name="queue_size" value="$(arg queue_size)"/>
+      <param name="timestamp" value="$(arg timestamp)"/>
+      <remap from="/tf_msg/sensor" to="$(arg tf_msg)"/>
+      <remap from="/tf_msg/base" to="$(arg tf_base)"/>
+  </node>
+
+  <group if="$(arg use_static_axis)">
+    <node name="sensordirection_axis_static" pkg="aero_sensors_private" type="sensordirection_axis_static"
+          output="$(arg output)" respawn="true">
+        <param name="ns" value="$(arg ns)"/>
+        <param name="x" value="$(arg xf)"/>
+        <param name="y" value="$(arg yf)"/>
+    </node>
+  </group>
+</launch>

@@ -1,0 +1,8 @@
+string name
+float32 r
+float32 p
+float32 y
+string label
+---
+bool success
+string message

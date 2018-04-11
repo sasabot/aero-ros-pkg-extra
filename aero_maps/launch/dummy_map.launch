@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="map_file" default="$(find aero_maps)/maps/room.yaml"/>
+  <include file="$(find aero_startup)/aero_move_base/launch/wheel_with_dummy.launch">
+    <arg name="map_file" value="$(arg map_file)" />
+  </include>
+
+  <include file="$(find aero_maps)/launch/shop_model_publisher.launch">
+    <arg name="shelf_param" value="$(find aero_maps)/config/shelf_2.yaml" />
+  </include>
+
+  <include file="$(find aero_std)/launch/spot_manager.launch">
+    <arg name="file" value="$(find aero_maps)/maps/spot_fcsc.yaml"/>
+  </include>
+</launch>

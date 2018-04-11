@@ -1,0 +1,39 @@
+<launch>
+  <!-- arguments -->
+  <!-- shelf param -->
+  <arg name="shelf_param"
+       default="$(find aero_maps)/config/shelf_2.yaml" />
+  <arg name ="optional_board" default="false" />
+
+  <!-- nodes -->
+  <node pkg="aero_maps"
+        type="shelf_model_publisher.py" output="screen"
+        name="shelf_model_publisher">
+    <rosparam file="$(arg shelf_param)" />
+  </node>
+
+  <node pkg="aero_maps"
+        type="carry_model_publisher.py" output="screen"
+        name="carry_model_publisher" />
+
+  <node pkg="aero_maps"
+        type="coffee_model_publisher.py" output="screen"
+        name="coffee_model_publisher" />
+
+  <node pkg="aero_maps"
+        type="onigiri_model_publisher.py" output="screen"
+        name="onigiri_model_publisher" />
+
+  <node pkg="aero_maps"
+        type="bento_model_publisher.py" output="screen"
+        name="bento_model_publisher" />
+
+  <node pkg="aero_maps"
+        type="sandwich_model_publisher.py" output="screen"
+        name="sandwich_model_publisher" />
+
+  <node pkg="aero_maps"
+        type="shelf_board_publisher.py" output="screen"
+        name="shelf_board_publisher"
+        if="$(arg optional_board)" />
+</launch>
