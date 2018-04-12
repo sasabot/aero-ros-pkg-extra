@@ -102,8 +102,6 @@ macro(jsk_add_nodelet _nodelet_cpp _nodelet_class _single_nodelet_exec_name)
 endmacro()
 
 IF(NOT DUMMY)
-  ## === Download model === ##
-  add_custom_target(install_model ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_model.py)
   jsk_add_nodelet(src/object_3d_projector.cpp "aero_ssd_recognition/Object3DProjector" "object_3d_projector")
 ENDIF(NOT DUMMY)
 
