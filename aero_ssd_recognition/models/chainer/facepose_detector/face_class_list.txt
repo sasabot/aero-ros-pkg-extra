@@ -1,0 +1,5 @@
+dontcare 0
+toward 1
+away 2
+amb 3
+unknown 4

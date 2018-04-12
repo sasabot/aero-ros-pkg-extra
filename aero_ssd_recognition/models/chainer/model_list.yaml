@@ -1,0 +1,3 @@
+face:
+  class_list: /home/user/ros/indigo/src/aero-ros-pkg-extra/aero_ssd_recognition/models/chainer/facepose_detector/face_class_list.txt
+  model: /home/user/ros/indigo/src/aero-ros-pkg-extra/aero_ssd_recognition/models/chainer/facepose_detector/face_model.npz

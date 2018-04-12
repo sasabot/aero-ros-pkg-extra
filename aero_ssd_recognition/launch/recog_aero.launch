@@ -6,6 +6,7 @@
   <arg name="gpu" default="0"/>
   <!-- detector params -->
   <arg name="score_thresh" default="0.75"/>
+  <arg name="eco_mode" default="true"/>
   <arg name="visualize" default="false" />
 
   <!-- file paths -->
@@ -19,7 +20,7 @@
       model_name : $(arg model)
       gpu: $(arg gpu)
       score_thresh: $(arg score_thresh)
-      eco_mode: $(arg echo_mode)
+      eco_mode: $(arg eco_mode)
       echo_hz: 1.0
       boost_hz: 30.0
       visualize: $(arg visualize)
