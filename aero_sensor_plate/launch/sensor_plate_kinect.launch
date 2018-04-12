@@ -1,0 +1,57 @@
+<launch>
+  <arg name="base_link" default="waist_link"/>
+  <arg name="camera_link" default="dynamic_kinect_frame"/>
+  <arg name="tf_sensor" default="/tf_msg/dynamic_kinect_frame"/>
+  <arg name="tf_base" default="/tf_msg/base_frame"/>
+  <arg name="queue_size" default="30"/>
+  <arg name="timestamp" default="0.12"/>
+  <arg name="output" default="screen"/>
+
+  <!-- controller -->
+  <node name="sensor_plate_controller" pkg="aero_sensor_plate"
+        type="sensor_plate_controller.py" output="screen"/>
+
+  <!-- frame publisher -->
+  <node name="sensor_plate_frame_publisher" pkg="aero_sensor_plate"
+        type="sensor_plate_frame_publisher" output="screen">
+     <param name="base_frame" value="$(arg base_link)"/>
+     <param name="sensor_frame" value="$(arg camera_link)"/>
+     <param name="rx" value="0.095"/>
+     <param name="ry" value="0.164"/>
+     <param name="z" value="0.12"/>
+     <param name="rot1" value="1.1170104"/>
+     <param name="rot2" value="0.0"/>
+     <param name="rot3" value="1.570796"/>
+  </node>
+
+  <!-- direction controller -->
+  <arg name="xf" default="1.0"/>
+  <arg name="yf" default="0.0"/>
+  <node name="sensor_direction_control" pkg="aero_sensor_plate"
+	type="sensor_direction_control" output="$(arg output)">
+      <param name="xf" value="$(arg xf)"/>
+      <param name="yf" value="$(arg yf)"/>
+  </node>
+
+  <!-- tf to msg -->
+  <!-- this gives control over timestamp when filtering -->
+  <node name="dynamic_base_tf" pkg="aero_sensor_plate" type="dynamic_tfstamped">
+      <param name="frame" value="$(arg base_link)"/>
+      <remap from="/tf_msg/dynamic_tf" to="$(arg tf_base)"/>
+  </node>
+  <node name="dynamic_sensor_tf" pkg="aero_sensor_plate" type="dynamic_tfstamped">
+      <param name="frame" value="$(arg camera_link)"/>
+      <remap from="/tf_msg/dynamic_tf" to="$(arg tf_sensor)"/>
+  </node>
+
+  <!-- direction filter -->
+  <arg name="thetaf" default="0.707"/>
+  <node name="sensordirection_filter" pkg="aero_sensor_plate" type="sensordirection_filter" output="$(arg output)" respawn="true">
+      <param name="ns" value="kinect"/>
+      <param name="theta" value="$(arg thetaf)"/>
+      <param name="queue_size" value="$(arg queue_size)"/>
+      <param name="timestamp" value="$(arg timestamp)"/>
+      <remap from="/tf_msg/sensor" to="$(arg tf_sensor)"/>
+      <remap from="/tf_msg/base" to="$(arg tf_base)"/>
+  </node>
+</launch>

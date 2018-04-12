@@ -1,0 +1,10 @@
+<library path="lib/libaero_ssd_recognition">
+  <class name="aero_ssd_recognition/Object3DProjector"
+         type="aero_ssd_recognition::Object3DProjector"
+         base_class_type="nodelet::Nodelet">
+  </class>
+  <class name="aero_ssd_recognition/DummyObject3DProjector"
+         type="aero_ssd_recognition::DummyObject3DProjector"
+         base_class_type="nodelet::Nodelet">
+  </class>
+</library>

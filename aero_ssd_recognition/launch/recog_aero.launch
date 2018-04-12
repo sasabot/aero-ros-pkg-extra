@@ -1,0 +1,54 @@
+<launch>
+  <arg name="dummy" default="false" />
+  <arg name="info" default="/stereo/left/camera_info" />
+  <arg name="image" default="/stereo/left/image_rect_color" />
+  <arg name="depth" default="/stereo/points2" />
+  <arg name="gpu" default="0"/>
+  <!-- detector params -->
+  <arg name="score_thresh" default="0.75"/>
+  <arg name="visualize" default="false" />
+
+  <!-- file paths -->
+  <arg name="model" default="face" />
+
+  <!-- object detector -->
+  <node pkg="aero_ssd_recognition" type="object_detector_chainer.py"
+        name="ssd_detector" output="screen" unless="$(arg dummy)" respawn="true">
+    <remap from="image" to="$(arg image)" />
+    <rosparam subst_value="true">
+      model_name : $(arg model)
+      gpu: $(arg gpu)
+      score_thresh: $(arg score_thresh)
+      eco_mode: $(arg echo_mode)
+      echo_hz: 1.0
+      boost_hz: 30.0
+      visualize: $(arg visualize)
+    </rosparam>
+  </node>
+  <node pkg="aero_ssd_recognition" type="object_3d_projector" name="object_3d_projector" output="log" respawn="true" unless="$(arg dummy)">
+    <remap from="~input_cloud" to="$(arg depth)" />
+    <remap from="~input_boxes" to="/ssd_detector/boxes" />
+    <remap from="~input_info" to="$(arg info)" />
+    <remap from="~input_image" to="/ssd_detector/image" />
+    <rosparam subst_value="true">
+      mode : 0
+      window_size : 20
+      search_step : 10
+    </rosparam>
+  </node>
+
+  <!-- dummy object detector -->
+  <node pkg="aero_ssd_recognition" type="dummy_object_detector.py"
+        name="object_detector" if="$(arg dummy)">
+    <remap from="image" to="$(arg image)" />
+    <rosparam subst_value="true">
+      model_name : $(arg model)
+      gpu: $(arg gpu)
+      score_thresh: $(arg score_thresh)
+      visualize: $(arg visualize)
+    </rosparam>
+  </node>
+  <node pkg="aero_ssd_recognition" type="dummy_object_3d_projector" name="object_3d_projector" respawn="true" if="$(arg dummy)">
+    <remap from="~input_boxes" to="/object_detector/boxes" />
+  </node>
+</launch>
