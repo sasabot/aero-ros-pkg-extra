@@ -38,6 +38,7 @@ IF(NOT DUMMY)
     pcl_conversions
     )
 
+  find_package(PCL 1.7 REQUIRED)
   find_package(OpenCV 3 REQUIRED)
   message("OPENCV ${OpenCV_VERSION} FOUND")
 
@@ -109,7 +110,7 @@ jsk_add_nodelet(src/dummy/object_3d_projector.cpp "aero_ssd_recognition/DummyObj
 
 add_library(${PROJECT_NAME} SHARED ${aero_ssd_recognition_nodelet_sources})
 IF(NOT DUMMY)
-  target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} yaml-cpp)
+  target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} yaml-cpp)
 ELSEIF(DUMMY)
   target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 ENDIF(NOT DUMMY)

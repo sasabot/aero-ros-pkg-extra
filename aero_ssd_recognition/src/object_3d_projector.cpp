@@ -74,14 +74,18 @@ namespace aero_ssd_recognition
                                 const sensor_msgs::CameraInfo::ConstPtr& info_msg,
                                 const sensor_msgs::Image::ConstPtr& img_msg)
   {
+    bool safe = true;
+    float scale_x = 1.0f, scale_y = 1.0f;
     if(points_msg->height != info_msg->height ||
        points_msg->width != info_msg->width){
-      ROS_ERROR("Invalid PointCloud shape!");
-      return;
+      ROS_WARN("Mismatch in PointCloud shape! Resizing!");
+      scale_x = (float)(points_msg->width) / info_msg->width;
+      scale_y = (float)(points_msg->height) / info_msg->height;
+      safe = false;
     }
 
     // setup input data
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>);
+    pcl::PointCloud<pcltype>::Ptr cloud(new pcl::PointCloud<pcltype>);
     pcl::fromROSMsg(*points_msg, *cloud);
     cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img_msg, img_msg->encoding);
     cv::Mat debug_img = cv_ptr->image;
@@ -99,6 +103,11 @@ namespace aero_ssd_recognition
 
     for(auto box : boxes_msg->boxes){
       ROS_INFO("projection    : %s", box.label.c_str());
+
+      box.x = (int)(box.x * scale_x);
+      box.y = (int)(box.y * scale_y);
+      box.width = (int)(box.width * scale_x);
+      box.height = (int)(box.height * scale_y);
 
       int x_center = (int)(box.x + box.width / 2);
       int y_center = (int)(box.y + box.height / 2);
@@ -149,50 +158,12 @@ namespace aero_ssd_recognition
         }
         break;
 
-        /** Simple mode with sandwich parameter**/
-      case Object3DProjector::Mode::SimpleForSandwich:
-        {
-          int valid_cnt = 0;
-          double x = 0, y = 0, z = 0;
-          y_center += (int)(box.height / 6.0);
-          for(int v = y_center - wsize_; v <= y_center + wsize_; v += step_){
-            for(int u = x_center - wsize_; u <= x_center + wsize_; u += step_){
-              if(v < 0 || v >= box.y + box.height || u < 0 || u >= box.x + box.width){
-                continue;
-              }
-              auto x_ = cloud->points[v * cloud->width + u].x;
-              auto y_ = cloud->points[v * cloud->width + u].y;
-              auto z_ = cloud->points[v * cloud->width + u].z;
-              if(!std::isnan(x_) && !std::isnan(y_) && !std::isnan(z_)){
-                valid_cnt++;
-                x += x_;
-                y += y_;
-                z += z_;
-              }
-            }
-          }
-          if(valid_cnt > 0){
-            x /= valid_cnt;
-            y /= valid_cnt;
-            z /= valid_cnt;
-            pose.pose.position.x = x;
-            pose.pose.position.y = y;
-            pose.pose.position.z = z;
-            debug_pose.position.x = x;
-            debug_pose.position.y = y;
-            debug_pose.position.z = z;
-            is_valid = true;
-
-          }
-        }
-        break;
-
         /** Nearest mode **/
       case Object3DProjector::Mode::Nearest:
         {
 
           // search and sort 3d point by distance from camera
-          std::vector<pcl::PointXYZRGBA> valid_points;
+          std::vector<pcltype> valid_points;
           Object3DProjector::getDistanceSortedPoints(cloud, valid_points, box);
 
           if(valid_points.size() > 0){
@@ -229,7 +200,7 @@ namespace aero_ssd_recognition
         {
 
           // search and sort 3d point by distance from camera
-          std::vector<pcl::PointXYZRGBA> valid_points;
+          std::vector<pcltype> valid_points;
           Object3DProjector::getDistanceSortedPoints(cloud, valid_points, box);
 
           if(valid_points.size() > 0){
@@ -272,6 +243,14 @@ namespace aero_ssd_recognition
         break;
       }
 
+      if (!safe) {
+        if (is_valid) {
+          poses_out_msg.poses.push_back(pose);
+          poses_debug_msg.poses.push_back(debug_pose);
+	}
+        continue;
+      }
+
       if(is_valid){
         // Red point for valid 3d projection
         auto point_2d = model.project3dToPixel(cv::Point3d(pose.pose.position.x,
@@ -280,7 +259,6 @@ namespace aero_ssd_recognition
         cv::circle(debug_img, point_2d, 5, cv::Scalar(0, 0, 255) ,-1);
         ROS_INFO("          pos : %lf %lf %lf",
                  pose.pose.position.x, pose.pose.position.y, pose.pose.position.z);
-
         poses_out_msg.poses.push_back(pose);
         poses_debug_msg.poses.push_back(debug_pose);
       } else {
@@ -300,15 +278,15 @@ namespace aero_ssd_recognition
                                           debug_img).toImageMsg());
   }
 
-  void Object3DProjector::getDistanceSortedPoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud,
-                                                  std::vector<pcl::PointXYZRGBA>& sorted_points,
+  void Object3DProjector::getDistanceSortedPoints(const pcl::PointCloud<pcltype>::Ptr cloud,
+                                                  std::vector<pcltype>& sorted_points,
                                                   aero_recognition_msgs::Scored2DBox& box){
     int valid_cnt = 0;
 
     sorted_points.reserve(box.width * box.height / step_ / step_);
     for(int v = box.y; v <= box.y + box.height; v += step_){
       for(int u = box.x; u <= box.x + box.width; u += step_){
-        pcl::PointXYZRGBA point;
+        pcltype point;
         point.x = cloud->points[v * cloud->width + u].x;
         point.y = cloud->points[v * cloud->width + u].y;
         point.z = cloud->points[v * cloud->width + u].z;
@@ -325,13 +303,13 @@ namespace aero_ssd_recognition
     sorted_points.resize(valid_cnt);
     std::sort(sorted_points.begin(),
               sorted_points.end(),
-              [](const pcl::PointXYZRGBA& a, const pcl::PointXYZRGBA& b)
+              [](const pcltype& a, const pcltype& b)
               { double a_dist = sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
                 double b_dist = sqrt(b.x * b.x + b.y * b.y + b.z * b.z);
                 return a_dist < b_dist;});
   }
 
-  double Object3DProjector::distance(const pcl::PointXYZRGBA& a, const pcl::PointXYZRGBA& b){
+  double Object3DProjector::distance(const pcltype& a, const pcltype& b){
     return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
   }
 

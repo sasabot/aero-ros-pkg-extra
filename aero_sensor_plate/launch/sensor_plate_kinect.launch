@@ -36,11 +36,11 @@
   <!-- tf to msg -->
   <!-- this gives control over timestamp when filtering -->
   <node name="dynamic_base_tf" pkg="aero_sensor_plate" type="dynamic_tfstamped">
-      <param name="frame" value="$(arg base_link)"/>
+      <param name="dynamic_frame" value="$(arg base_link)"/>
       <remap from="/tf_msg/dynamic_tf" to="$(arg tf_base)"/>
   </node>
   <node name="dynamic_sensor_tf" pkg="aero_sensor_plate" type="dynamic_tfstamped">
-      <param name="frame" value="$(arg camera_link)"/>
+      <param name="dynamic_frame" value="$(arg camera_link)"/>
       <remap from="/tf_msg/dynamic_tf" to="$(arg tf_sensor)"/>
   </node>
 

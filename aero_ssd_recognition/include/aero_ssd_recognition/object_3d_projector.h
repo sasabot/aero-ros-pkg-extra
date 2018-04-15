@@ -26,6 +26,8 @@
 
 namespace aero_ssd_recognition
 {
+  typedef pcl::PointXYZRGBA pcltype;
+
   class Object3DProjector: public jsk_topic_tools::DiagnosticNodelet
   {
   public:
@@ -58,10 +60,10 @@ namespace aero_ssd_recognition
                        const aero_recognition_msgs::Scored2DBoxArray::ConstPtr& boxes_msg,
                        const sensor_msgs::CameraInfo::ConstPtr& info_msg,
                        const sensor_msgs::Image::ConstPtr& img_msg);
-    virtual void getDistanceSortedPoints(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud,
-                                         std::vector<pcl::PointXYZRGBA>& sorted_points,
+    virtual void getDistanceSortedPoints(const pcl::PointCloud<pcltype>::Ptr cloud,
+                                         std::vector<pcltype>& sorted_points,
                                          aero_recognition_msgs::Scored2DBox& box);
-    virtual double distance(const pcl::PointXYZRGBA& a, const pcl::PointXYZRGBA& b);
+    virtual double distance(const pcltype& a, const pcltype& b);
 
     message_filters::Subscriber<sensor_msgs::PointCloud2> sub_cloud_;
     message_filters::Subscriber<aero_recognition_msgs::Scored2DBoxArray> sub_box_;

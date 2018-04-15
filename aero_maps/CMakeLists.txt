@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(aero_maps)
-find_package(catkin REQUIRED std_msgs geometry_msgs)
+find_package(catkin REQUIRED std_msgs geometry_msgs message_generation)
 find_package(Boost REQUIRED COMPONENTS filesystem system signals thread)
 
 include_directories(
@@ -8,8 +8,6 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
-
-catkin_python_setup()
 
 add_message_files(
   FILES
