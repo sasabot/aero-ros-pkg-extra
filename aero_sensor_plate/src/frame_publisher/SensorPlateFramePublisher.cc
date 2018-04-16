@@ -12,7 +12,7 @@ void SubscribeAngle(const std_msgs::Float32::ConstPtr& _angle)
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "sensor_plate_tf_broadcaster");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
 
   ros::Subscriber angle_subscriber =
     nh.subscribe("/sensor_plate_controller/state", 100, &SubscribeAngle);

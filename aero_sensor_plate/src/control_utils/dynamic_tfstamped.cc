@@ -7,6 +7,9 @@ int main(int argc, char** argv) {
 
   ros::NodeHandle nh("~");
 
+  std::string ref_name = "/map";
+  nh.getParam("reference_frame", ref_name);
+
   std::string frame_name = "/dynamic_frame";
   nh.getParam("dynamic_frame", frame_name);
 
@@ -19,7 +22,7 @@ int main(int argc, char** argv) {
   while (nh.ok()) {
     tf::StampedTransform transform;
     try {
-      listener.lookupTransform("/map", frame_name,
+      listener.lookupTransform(ref_name, frame_name,
                                ros::Time(0), transform);
     } catch (tf::TransformException &ex) {
       ROS_ERROR("%s",ex.what());
