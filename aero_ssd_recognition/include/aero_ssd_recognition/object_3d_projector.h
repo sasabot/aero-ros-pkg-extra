@@ -19,14 +19,22 @@
 #include <pcl/common/geometry.h>
 #include <image_geometry/pinhole_camera_model.h>
 
+#if defined(KINETIC_)
 #include <opencv2/core.hpp>
+#elif defined(INDIGO_)
+#include <opencv2/core/core.hpp>
+#endif
 
 #include <aero_recognition_msgs/LabeledPoseArray.h>
 #include <geometry_msgs/PoseArray.h>
 
 namespace aero_ssd_recognition
 {
+#if defined(RGBA_)
   typedef pcl::PointXYZRGBA pcltype;
+#else
+  typedef pcl::PointXYZ pcltype;
+#endif
 
   class Object3DProjector: public jsk_topic_tools::DiagnosticNodelet
   {

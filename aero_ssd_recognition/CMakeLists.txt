@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(aero_ssd_recognition)
 
+option(RGBA "point cloud type" ON)
+if(RGBA)
+  add_definitions(-DRGBA_)
+endif()
+
 OPTION(WITH_CUDA "Turn this option on to enable cuda support" OFF)
 IF(WITH_CUDA)
  MESSAGE("Compiling with CUDA support")
@@ -34,12 +39,17 @@ IF(NOT DUMMY)
     roscpp
     rospy
     nodelet
-    jsk_data
     pcl_conversions
     )
 
   find_package(PCL 1.7 REQUIRED)
-  find_package(OpenCV 3 REQUIRED)
+  if("$ENV{ROS_DISTRO}" STREQUAL "indigo")
+    find_package(OpenCV 2 REQUIRED)
+    add_definitions(-DINDIGO_)
+  elseif("$ENV{ROS_DISTRO}" STREQUAL "kinetic")
+    find_package(OpenCV 3 REQUIRED)
+    add_definitions(-DKINETIC_)
+  endif()
   message("OPENCV ${OpenCV_VERSION} FOUND")
 
 ELSE(NOT DUMMY)
@@ -52,10 +62,19 @@ find_package(catkin REQUIRED
   roscpp
   rospy
   nodelet
-  jsk_data
   pcl_conversions
   )
 ENDIF(NOT DUMMY)
+
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/models/chainer/model_list.yaml
+  COMMAND ./setup.sh ${CMAKE_CURRENT_SOURCE_DIR}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/)
+
+add_custom_target(
+  BuildDocs ALL
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/models/chainer/model_list.yaml
+  )
 
 find_package(Boost REQUIRED COMPONENTS filesystem system signals)
 find_package(Eigen3 REQUIRED)
