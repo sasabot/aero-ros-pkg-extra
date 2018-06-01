@@ -128,6 +128,10 @@ namespace aero
     /// @return succeed or not
     public: bool execute(aero::interface::AeroMoveitInterface::Ptr _robot, const moveit_msgs::MotionPlanResponse _res, const int _duration, const aero::ikrange _ikrange, const bool _async=true);
 
+    /// @brief mirror solved plan on one arm to the other
+    /// @param[in] _res solved trajectory and status to mirror from and to
+    public: void mirrorPlan(moveit_msgs::MotionPlanResponse& _res);
+
     /// @brief check collision between robot state and environment
     /// @param[in] _robot robot interface with robot state
     /// @return whether there was collision or not (visual /moveit/collision/contacts)
@@ -142,7 +146,7 @@ namespace aero
     /// @brief set robot state to end state trajectory of solved trajectory
     /// @param[in] _robot robot interface to change state
     /// @param[in] _goal the response containing solved trajectory
-    public: void setStateToTrajectoryEnd(aero::interface::AeroMoveitInterface::Ptr _robot, moveit_msgs::MotionPlanResponse _goal);
+    public: void setStateToTrajectoryEnd(aero::interface::AeroMoveitInterface::Ptr _robot, const moveit_msgs::MotionPlanResponse _goal);
 
     /// @brief fill in _req with default workspace parameters
     /// @param[in] _req plan request to fill.

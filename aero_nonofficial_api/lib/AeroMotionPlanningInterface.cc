@@ -232,6 +232,58 @@ bool aero::interface::AeroMotionPlanningInterface::execute
   return _robot->sendTrajectory(av_seq, tm_seq, _ikrange, _async);
 }
 
+void aero::interface::AeroMotionPlanningInterface::mirrorPlan
+(moveit_msgs::MotionPlanResponse& goal) {
+  // find arm joint names
+  std::vector<std::string> arm_joints;
+  for (auto j = aero::joint_map.begin(); j != aero::joint_map.end(); ++j)
+    if (j->second.find("r_") == 0 || j->second.find("l_") == 0)
+      arm_joints.push_back(j->second);
+
+  // add joint names
+  std::vector<std::pair<uint, int> > sgn; // mapping joint, mapping signature
+  for (auto j = arm_joints.begin(); j != arm_joints.end(); ++j) {
+    auto copy_to = std::find(goal.trajectory.joint_trajectory.joint_names.begin(),
+                             goal.trajectory.joint_trajectory.joint_names.end(), *j);
+    if (copy_to == goal.trajectory.joint_trajectory.joint_names.end()) {
+      // make sure joint exists in other hand
+      std::string copy_joint_name;
+      if (j->find("r_") == 0) // if we are copying to right
+        copy_joint_name = "l_" + j->substr(2);
+      else
+        copy_joint_name = "r_" + j->substr(2);
+      auto copy_from = std::find(goal.trajectory.joint_trajectory.joint_names.begin(),
+                                 goal.trajectory.joint_trajectory.joint_names.end(),
+                                 copy_joint_name);
+      uint i;
+      if (copy_from == goal.trajectory.joint_trajectory.joint_names.end() ||
+          (i = static_cast<uint>
+           (copy_from - goal.trajectory.joint_trajectory.joint_names.begin()))
+          >= goal.trajectory.joint_trajectory.joint_names.size()) {
+        ROS_ERROR("tried to copy from %s to %s, but is not valid joint",
+                  copy_joint_name.c_str(), j->c_str());
+        continue;
+      }
+      goal.trajectory.joint_trajectory.joint_names.push_back(*j);
+      int s;
+      if (j->find("_p_") != std::string::npos) // pitch does not have to revert
+        s = 1;
+      else if (j->find("_r_") != std::string::npos || j->find("_y_") != std::string::npos)
+        s = -1;
+      else if (j->find("_elbow_") != std::string::npos) // unfortunately hard coded
+        s = 1;
+      sgn.push_back({i, s});
+    }
+  }
+
+  // add values to trajectory
+  for (int i = 0; i < goal.trajectory.joint_trajectory.points.size(); ++i) {
+    for (auto s = sgn.begin(); s != sgn.end(); ++s)
+      goal.trajectory.joint_trajectory.points.at(i).positions.push_back
+        (s->second * goal.trajectory.joint_trajectory.points.at(i).positions.at(s->first));
+  }
+}
+
 bool aero::interface::AeroMotionPlanningInterface::checkCollision
 (aero::interface::AeroMoveitInterface::Ptr _rm) {
   collision_detection::CollisionRequest creq;

@@ -1,0 +1,10 @@
+<launch>
+  <arg name="name" default=""/>
+
+  <rosparam command="load" file="$(find aero_moveit_config)/config/ompl_planning.yaml"/>
+  <node name="bento_example" pkg="aero_nonofficial_api" type="bento_example" respawn="false" output="screen">
+    <rosparam command="load" file="$(find aero_moveit_config)/config/kinematics.yaml"/>
+    <param name="name" value="$(arg name)"/>
+  </node>
+</launch>
+

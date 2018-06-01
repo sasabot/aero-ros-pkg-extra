@@ -3,18 +3,22 @@ project(aero_nonofficial_api)
 
 option(DEBUG "debug" OFF)
 option(GAZEBO "gazebo" OFF)
+option(SIM "simulation" OFF)
 
 if("$ENV{ROS_DISTRO}" STREQUAL "indigo")
 add_definitions(-DINDIGO_)
 endif()
 
-# debug = small loop test                                                                                                                                     
 if(DEBUG)
 add_definitions(-DDEBUG_)
 endif()
 
 if(GAZEBO)
 add_definitions(-DUSE_GAZEBO_SIM_)
+endif()
+
+if(SIM)
+add_definitions(-DUSE_SIM_)
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -43,3 +47,8 @@ add_library(aero_npi_
   lib/NonPrehensileGraspInterface.cc
 )
 target_link_libraries(aero_npi_ ${catkin_LIBRARIES})
+
+# examples
+
+add_executable(bento_example src/bento_example.cc)
+target_link_libraries(bento_example aero_mpi_ ${catkin_LIBRARIES})
