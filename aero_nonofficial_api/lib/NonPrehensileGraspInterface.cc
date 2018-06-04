@@ -1,7 +1,7 @@
 #include "aero_nonofficial_api/NonPrehensileGraspInterface.hh"
 
 aero::interface::npgrasp_standard::npgrasp_standard
-(ros::NodeHandle &_nh, aero::interface::npgrasp_standard::npgrasptype _type)
+(ros::NodeHandle &_nh, const aero::interface::npgrasp_standard::npgrasptype _type)
   : NonPrehensileGraspInterface(_nh) {
   type_ = _type;
   // reach offset is required to solve collision avoidance
@@ -78,7 +78,7 @@ bool aero::interface::npgrasp_standard::execute
 }
 
 aero::interface::npgrasp_else::npgrasp_else
-(ros::NodeHandle &_nh, aero::interface::npgrasp_else::npgrasptype _type)
+(ros::NodeHandle &_nh, const aero::interface::npgrasp_else::npgrasptype _type)
   : NonPrehensileGraspInterface(_nh) {
   type_ = _type;
 
@@ -185,7 +185,7 @@ aero::interface::NonPrehensileGraspInterface::~NonPrehensileGraspInterface() {
 }
 
 bool aero::interface::NonPrehensileGraspInterface::executeGraspDefinition
-(aero::interface::AeroMoveitInterface::Ptr _robot, aero::grasp_definition::definition _def) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const aero::grasp_definition::definition _def) {
   switch(_def.type) {
   case aero::grasp_definition::types::gripper: {
     if (_def.gripper.first == aero::arm::rarm) {
@@ -353,7 +353,7 @@ bool aero::interface::NonPrehensileGraspInterface::executeGraspDefinition
 bool aero::interface::NonPrehensileGraspInterface::plan_
 (aero::interface::AeroMoveitInterface::Ptr _robot,
  aero::interface::AeroMotionPlanningInterface::Ptr _mpi,
- aero::arm _arm, aero::Transform _target, bool _joint) {
+ const aero::arm _arm, aero::Transform _target, const bool _joint) {
   _target = aero::Translation(_target.translation() + offset_) * aero::Quaternion(_target.linear());
   // solve reach trajectory
   _mpi->setCurrentState(_robot);
@@ -432,8 +432,8 @@ void aero::interface::NonPrehensileGraspInterface::calibrate() {
 }
 
 bool aero::interface::NonPrehensileGraspInterface::touchTillForceDetection
-(aero::interface::AeroMoveitInterface::Ptr _robot, float _force, int _t,
- double _x, double _z, float* _ref_force) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const float _force, const int _t,
+ const double _x, const double _z, float* _ref_force) {
   printf("maximum goal: %f, %f\n", _x, _z);
   if (!_robot->setLifter(_x, _z)) {
     ROS_ERROR("In touch solve: cannot touch, I.K. failed.");
@@ -530,7 +530,7 @@ void aero::interface::NonPrehensileGraspInterface::setEndForce() {
   force_mutex_.unlock();
 }
 
-float aero::interface::NonPrehensileGraspInterface::readLastForce(int _num) {
+float aero::interface::NonPrehensileGraspInterface::readLastForce(const int _num) {
   if (_num >= force_data4analysis_.size()
       || force_data4analysis_.at(_num).size() == 0) {
     ROS_WARN("cannot read last force of %d", _num);
@@ -544,7 +544,7 @@ float aero::interface::NonPrehensileGraspInterface::readLastForce(int _num) {
   return force;
 }
 
-float aero::interface::NonPrehensileGraspInterface::readMaxForce(int _num) {
+float aero::interface::NonPrehensileGraspInterface::readMaxForce(const int _num) {
   if (_num >= force_data4analysis_.size()
       || force_data4analysis_.at(_num).size() == 0) {
     ROS_WARN("cannot read last force of %d", _num);

@@ -1,7 +1,7 @@
 #include "aero_nonofficial_api/AeroMotionPlanningInterface.hh"
 
 aero::interface::AeroMotionPlanningInterface::AeroMotionPlanningInterface
-(ros::NodeHandle &_nh, robot_model::RobotModelConstPtr _rm, std::string _plugin) {
+(ros::NodeHandle &_nh, const robot_model::RobotModelConstPtr _rm, const std::string _plugin) {
   try {
     planner_plugin_loader.reset(new pluginlib::ClassLoader<planning_interface::PlannerManager>("moveit_core", "planning_interface::PlannerManager"));
   } catch (pluginlib::PluginlibException& ex) {
@@ -56,7 +56,7 @@ void aero::interface::AeroMotionPlanningInterface::setCurrentState
 }
 
 aero::Transform aero::interface::AeroMotionPlanningInterface::getTransformInMoveGroupEEF
-(aero::interface::AeroMoveitInterface::Ptr _robot, std::string _group_name, aero::arm _arm, aero::eef _eef, aero::Transform _mat) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const std::string _group_name, const aero::arm _arm, const aero::eef _eef, const aero::Transform _mat) {
   std::map<aero::joint, double> av;
   _robot->getRobotStateVariables(av); // save current pose
   if (!_robot->setFromIK(_group_name, _mat, aero::eefLink(_arm, _eef))) {
@@ -70,7 +70,7 @@ aero::Transform aero::interface::AeroMotionPlanningInterface::getTransformInMove
 }
 
 void aero::interface::AeroMotionPlanningInterface::setDefaultColor
-(float _r, float _g, float _b, float _a) {
+(const float _r, const float _g, const float _b, const float _a) {
   color_.color.r = _r;
   color_.color.g = _g;
   color_.color.b = _b;
@@ -78,7 +78,7 @@ void aero::interface::AeroMotionPlanningInterface::setDefaultColor
 }
 
 void aero::interface::AeroMotionPlanningInterface::processCollisionBox
-(std::string _id, std::string _parent, aero::Transform _pose, aero::Vector3 _scale) {
+(const std::string _id, const std::string _parent, const aero::Transform _pose, const aero::Vector3 _scale) {
   moveit_msgs::CollisionObject object;
   object.header.frame_id = _parent;
   object.id = _id;
@@ -105,8 +105,8 @@ void aero::interface::AeroMotionPlanningInterface::processCollisionBox
 }
 
 void aero::interface::AeroMotionPlanningInterface::processCollisionMesh
-(std::string _id, std::string _parent, aero::Transform _pose,
- std::string _resource, aero::Vector3 _scale) {
+(const std::string _id, const std::string _parent, const aero::Transform _pose,
+ const std::string _resource, const aero::Vector3 _scale) {
   moveit_msgs::CollisionObject object;
   object.header.frame_id = _parent;
   object.id = _id;
@@ -129,7 +129,7 @@ void aero::interface::AeroMotionPlanningInterface::processCollisionMesh
   scene_msg.object_colors.push_back(color);
 }
 
-void aero::interface::AeroMotionPlanningInterface::remove(std::string _object) {
+void aero::interface::AeroMotionPlanningInterface::remove(const std::string _object) {
   moveit_msgs::CollisionObject object;
   object.id = _object;
   object.operation = object.REMOVE;
@@ -145,14 +145,14 @@ void aero::interface::AeroMotionPlanningInterface::remove(std::string _object) {
 
 moveit_msgs::Constraints
 aero::interface::AeroMotionPlanningInterface::constructGoalConstraints
-(aero::interface::AeroMoveitInterface::Ptr _robot, std::string _group_name, double _tolerance1, double _tolerance2) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const std::string _group_name, const double _tolerance1, const double _tolerance2) {
   return
     kinematic_constraints::constructGoalConstraints(*_robot->kinematic_state, _robot->getJointModelGroup(_group_name), _tolerance1, _tolerance2);
 }
 
 moveit_msgs::Constraints
 aero::interface::AeroMotionPlanningInterface::constructGoalConstraints
-(std::string _origin, aero::Transform _goal, aero::arm _arm, double _tolerance1, double _tolerance2) {
+(const std::string _origin, const aero::Transform _goal, const aero::arm _arm, const double _tolerance1, const double _tolerance2) {
   geometry_msgs::PoseStamped pose;
   pose.header.frame_id = _origin;
   tf::poseEigenToMsg(_goal, pose.pose);
@@ -182,7 +182,7 @@ bool aero::interface::AeroMotionPlanningInterface::plan
 }
 
 bool aero::interface::AeroMotionPlanningInterface::plan
-(planning_interface::MotionPlanRequest& _req, moveit_msgs::MotionPlanResponse &_res, double &_t, int _trials) {
+(planning_interface::MotionPlanRequest& _req, moveit_msgs::MotionPlanResponse &_res, double &_t, const int _trials) {
   planning_interface::MotionPlanResponse res;
   auto t_s = ros::Time::now();
   for (int i = 0; i < _trials; ++i) {
@@ -197,14 +197,14 @@ bool aero::interface::AeroMotionPlanningInterface::plan
 }
 
 bool aero::interface::AeroMotionPlanningInterface::execute
-(aero::interface::AeroMoveitInterface::Ptr _robot, planning_interface::MotionPlanResponse _res, int _duration, aero::ikrange _ikrange, bool _async) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, planning_interface::MotionPlanResponse _res, const int _duration, const aero::ikrange _ikrange, const bool _async) {
   moveit_msgs::MotionPlanResponse goal;
   _res.getMessage(goal);
   execute(_robot, goal, _duration, _ikrange, _async);
 };
 
 bool aero::interface::AeroMotionPlanningInterface::execute
-(aero::interface::AeroMoveitInterface::Ptr _robot, moveit_msgs::MotionPlanResponse goal, int _duration, aero::ikrange _ikrange, bool _async) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const moveit_msgs::MotionPlanResponse goal, const int _duration, const aero::ikrange _ikrange, const bool _async) {
   // always bypass robot interface (even if not efficient) so nothing is screwed up
 
   // get joint names
@@ -309,7 +309,7 @@ bool aero::interface::AeroMotionPlanningInterface::checkCollision
 }
 
 bool aero::interface::AeroMotionPlanningInterface::checkCollision
-(aero::interface::AeroMoveitInterface::Ptr _robot, planning_interface::MotionPlanResponse _res) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const planning_interface::MotionPlanResponse _res) {
   collision_detection::CollisionRequest creq;
   collision_detection::CollisionResult cres;
   creq.contacts = true;
@@ -348,7 +348,7 @@ bool aero::interface::AeroMotionPlanningInterface::checkCollision
 }
 
 void aero::interface::AeroMotionPlanningInterface::setStateToTrajectoryEnd
-(aero::interface::AeroMoveitInterface::Ptr _robot, moveit_msgs::MotionPlanResponse _goal) {
+(aero::interface::AeroMoveitInterface::Ptr _robot, const moveit_msgs::MotionPlanResponse _goal) {
   std::vector<aero::joint> joint_names(_goal.trajectory.joint_trajectory.joint_names.size());
   for (int i = 0; i < joint_names.size(); ++i)
     joint_names.at(i) = aero::str2joint(_goal.trajectory.joint_trajectory.joint_names.at(i));
@@ -366,14 +366,14 @@ void aero::interface::AeroMotionPlanningInterface::displayScene() {
 }
 
 void aero::interface::AeroMotionPlanningInterface::displayTrajectory
-(planning_interface::MotionPlanResponse _res) {
+(const planning_interface::MotionPlanResponse _res) {
   moveit_msgs::MotionPlanResponse response;
   _res.getMessage(response);
   displayTrajectory(response);
 }
 
 void aero::interface::AeroMotionPlanningInterface::displayTrajectory
-(moveit_msgs::MotionPlanResponse response) {
+(const moveit_msgs::MotionPlanResponse response) {
   moveit_msgs::DisplayTrajectory display_trajectory;
   display_trajectory.trajectory_start = response.trajectory_start;
   display_trajectory.trajectory.push_back(response.trajectory);
