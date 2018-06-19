@@ -32,6 +32,7 @@ int main(int argc, char** argv) {
 
     geometry_msgs::PoseStamped msg_stamped;
     msg_stamped.header.stamp = transform.stamp_;
+    msg_stamped.header.frame_id = ref_name;
 
     geometry_msgs::Pose msg;
     msg.position.x = transform.getOrigin().x();
